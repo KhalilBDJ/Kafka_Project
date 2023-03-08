@@ -67,9 +67,9 @@ public class CovidDataProducer {
         String jsonString = response.toString();
         String topicName = "testTopic";
 
-        KafkaProducer<String, String> producer = new KafkaProducer<String, String>(props);
+        KafkaProducer<String, String> producer = new KafkaProducer<>(props);
 
-        ProducerRecord<String, String> record = new ProducerRecord<String, String>(topicName, jsonString);
+        ProducerRecord<String, String> record = new ProducerRecord<>(topicName, jsonString);
         producer.send(record);
 
         producer.close();
