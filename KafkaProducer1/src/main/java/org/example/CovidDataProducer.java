@@ -14,10 +14,34 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class CovidDataProducer {
 
     public static void main(String[] args) throws IOException {
+        CovidDataProducer producer = new CovidDataProducer();
+        producer.start();
+    }
+
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+
+    public void start() {
+        scheduler.scheduleAtFixedRate(() -> {
+            try {
+                SendCovidData();
+            } catch (Exception e) {
+                System.err.println("Failed to send COVID data to Kafka: " + e.getMessage());
+            }
+        }, 0, 30, TimeUnit.MINUTES);
+    }
+
+    public void stop() {
+        scheduler.shutdown();
+    }
+
+    private void SendCovidData() throws IOException {
         // configure producer properties
         Properties props = new Properties();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
