@@ -9,3 +9,7 @@ docker exec -it zookeeper /bin/bash (Pour lancer la console du serveur Zookeeper
 docker exec -it kafka-1 /bin/bash (Pour lancer la console du broker kafka-1)
 
 docker exec -it kafka-2 /bin/bash (Pour lancer la console du broker kafka-2)
+
+Pour faire un consumer:
+
+kafka-console-consumer --bootstrap-server localhost:9092 --topic my-topic --from-beginning
