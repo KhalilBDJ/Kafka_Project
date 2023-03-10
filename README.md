@@ -13,3 +13,7 @@ docker exec -it kafka-2 /bin/bash (Pour lancer la console du broker kafka-2)
 Pour faire un consumer:
 
 kafka-console-consumer --bootstrap-server localhost:9092 --topic my-topic --from-beginning
+
+Pour supprimer les messages :
+
+kafka-delete-records --bootstrap-server localhost:9092 --topic my-topic --offset earliest
