@@ -61,18 +61,6 @@ public class CovidDataProducer {
 
         AdminClient adminClient = AdminClient.create(props);
 
-        TopicPartition topicPartition = new TopicPartition("Topic1", 0);
-        Map<TopicPartition, RecordsToDelete> recordsToDelete = new HashMap<>();
-        recordsToDelete.put(topicPartition, RecordsToDelete.beforeOffset(1L));
-
-        DeleteRecordsResult deleteResult = adminClient.deleteRecords(recordsToDelete);
-        try {
-            deleteResult.all().get();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
-        }
 
         // create kafka producer
         URL url = new URL("https://api.covid19api.com/summary");
@@ -90,7 +78,6 @@ public class CovidDataProducer {
         in.close();
         String jsonString = response.toString();
         String topicName = "Topic1";
-        //deleteTopicData("testTopic", 0, 1000000, adminClient);
         KafkaProducer<String, String> producer = new KafkaProducer<>(props);
 
         ProducerRecord<String, String> record = new ProducerRecord<>(topicName, jsonString);
@@ -99,9 +86,7 @@ public class CovidDataProducer {
         producer.close();
     }
 
-    public void deleteTopicData(String topicName, int partitionIndex, int beforeIndex, AdminClient kafkaAdminClient) {
 
-    }
 
 
 

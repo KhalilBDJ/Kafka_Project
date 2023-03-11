@@ -58,7 +58,7 @@ public class CovidDataConsumer {
                 JsonNode countriesNode = jsonNode.get("Countries");
                 Countries[] countries = objectMapper.readValue(countriesNode.toString(), Countries[].class);
 
-                // Insérer les données globales dans la table "global_data" de la base de données PostgreSQL
+
                 PreparedStatement statementGlobal = conn.prepareStatement("INSERT INTO global_data (new_confirmed, total_confirmed, new_deaths, total_deaths, new_recovered, total_recovered) VALUES (?, ?, ?, ?, ?, ?)");
                 statementGlobal.setInt(1, global.getNewConfirmed());
                 statementGlobal.setInt(2, global.getTotalConfirmed());
