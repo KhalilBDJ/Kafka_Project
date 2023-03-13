@@ -14,13 +14,10 @@ public class CommandProducer {
 
     private static final String BOOSTSRAP_SERVERS = "localhost:9092";
     private static final String TOPIC_NAME2 = "Topic2";
-    private static final String TOPIC_NAME3 = "Topic3";
-    private final static String GROUP_ID = "group1";
 
     public static void main(String[] args) throws IOException{
         CommandProducer commandProducer = new CommandProducer();
         commandProducer.StartProducer();
-
     }
 
     private void StartProducer(){

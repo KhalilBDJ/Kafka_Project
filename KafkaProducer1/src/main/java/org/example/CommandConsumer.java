@@ -12,9 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-public class CommandConsumer {
+public class CommandConsumer extends Thread{
     private static final String BOOSTSRAP_SERVERS = "localhost:9092";
-    private static final String TOPIC_NAME2 = "Topic2";
     private static final String TOPIC_NAME3 = "Topic3";
     private final static String GROUP_ID = "group1";
 
