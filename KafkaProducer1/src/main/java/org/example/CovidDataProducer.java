@@ -30,6 +30,7 @@ public class CovidDataProducer {
 
 
     private static final String KAFKA_SERVERS = "localhost:9092"; // adresse du serveur kafka
+    private static final String TOPIC_NAME = "Topic1";
 
     public static void main(String[] args) throws IOException {
         CovidDataProducer producer = new CovidDataProducer();
@@ -77,7 +78,7 @@ public class CovidDataProducer {
 
         in.close();
         String jsonString = response.toString();
-        String topicName = "Topic1";
+        String topicName = TOPIC_NAME;
         KafkaProducer<String, String> producer = new KafkaProducer<>(props);
 
         ProducerRecord<String, String> record = new ProducerRecord<>(topicName, jsonString);
