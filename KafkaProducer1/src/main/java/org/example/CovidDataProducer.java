@@ -28,7 +28,6 @@ import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
-@SpringBootApplication
 @EnableKafka
 @EnableScheduling
 @Import(KafkaConfiguration.class) // Importez la configuration Kafka ici
@@ -41,23 +40,6 @@ public class CovidDataProducer {
     @Autowired
     private KafkaTemplate<String, Object> kafkaTemplate;
 
-    @Async
-    public void Start(ConfigurableApplicationContext context) throws ExecutionException, InterruptedException {
-        //ConfigurableApplicationContext context = SpringApplication.run(CovidDataProducer.class);
-
-        // Créer un bean KafkaAdmin pour pouvoir créer des topics
-        KafkaAdmin admin = (KafkaAdmin) context.getBean("kafkaAdmin");
-        AdminClient client = AdminClient.create(admin.getConfigurationProperties());
-
-        // Vérifier si le topic existe
-        if (!client.listTopics().names().get().contains(TOPIC_NAME)) {
-            // Créer le topic avec une partition et un replication factor de 1
-            NewTopic topic = new NewTopic(TOPIC_NAME, 1, (short) 1);
-            client.createTopics(Collections.singletonList(topic));
-        }
-    }
-
-    // Envoyer les données COVID toutes les 30 minutes
     @Scheduled(fixedDelay = 30 * 60 * 1000)
     public void sendCovidData() throws IOException {
         URL url = new URL("https://api.covid19api.com/summary");

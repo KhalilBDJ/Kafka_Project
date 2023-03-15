@@ -2,6 +2,7 @@ package org.example;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.internals.Sender;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.context.annotation.Bean;
@@ -47,4 +48,6 @@ public class KafkaConfiguration {
         factory.setConsumerFactory(consumerFactory());
         return factory;
     }
+
+
 }

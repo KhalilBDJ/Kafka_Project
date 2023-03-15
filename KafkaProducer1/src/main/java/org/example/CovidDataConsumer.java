@@ -6,6 +6,7 @@ import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -15,6 +16,7 @@ import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.listener.ConsumerSeekAware;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
@@ -33,11 +35,10 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
-@SpringBootApplication
 @EnableKafka
 @Import(KafkaConfiguration.class)
 @Component
-public class CovidDataConsumer {
+public class CovidDataConsumer implements ConsumerSeekAware {
 
     private final static String TOPIC_NAME = "Topic1";
     private final static String GROUP_ID = "group1";
@@ -46,14 +47,14 @@ public class CovidDataConsumer {
     private final static String DB_USER = "postgres";
     private final static String DB_PASSWORD = "1797";
 
-    private final KafkaConfiguration kafkaConfiguration;
-
-    @Autowired
+   /* private final KafkaConfiguration kafkaConfiguration;
+*/
+   /* @Autowired
     public CovidDataConsumer(KafkaConfiguration kafkaConfiguration) {
         this.kafkaConfiguration = kafkaConfiguration;
-    }
+    }*/
 
-    @Async
+   /* @Async
     public void Start() {
         try (Consumer<String, String> consumer = createConsumer()) {
             consumer.subscribe(Collections.singletonList(TOPIC_NAME));
@@ -75,6 +76,18 @@ public class CovidDataConsumer {
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
         props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000");
         return new KafkaConsumer<>(props);
+    }*/
+
+    @Override
+    public void onPartitionsAssigned(Map<TopicPartition, Long> assignments, ConsumerSeekCallback callback) {
+        for (Map.Entry<TopicPartition, Long> entry : assignments.entrySet()) {
+            callback.seekToEnd(entry.getKey().topic(), entry.getKey().partition());
+        }
+    }
+
+    @Override
+    public void onIdleContainer(Map<TopicPartition, Long> assignments, ConsumerSeekCallback callback) {
+        // Laissez cette méthode vide
     }
 
 
@@ -108,6 +121,9 @@ public class CovidDataConsumer {
             if (generatedKeys.next()) {
                 int globalId = generatedKeys.getInt(1);
                 ArrayNode countriesNode = (ArrayNode) jsonNode.get("Countries");
+                if (countriesNode == null){
+                    System.out.println("oui");
+                }
                 for (JsonNode countryNode : countriesNode) {
                     String country = countryNode.get("Country").asText();
                     String countryCode = countryNode.get("CountryCode").asText();
