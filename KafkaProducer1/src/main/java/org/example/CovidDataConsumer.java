@@ -1,8 +1,17 @@
 package org.example;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Import;
+import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
@@ -12,15 +21,22 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 
 import java.io.IOException;
 import java.sql.*;
+import java.time.Duration;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
 
 @SpringBootApplication
+@EnableKafka
+@Import(KafkaConfiguration.class)
+@Component
 public class CovidDataConsumer {
 
     private final static String TOPIC_NAME = "Topic1";
@@ -30,30 +46,43 @@ public class CovidDataConsumer {
     private final static String DB_USER = "postgres";
     private final static String DB_PASSWORD = "1797";
 
-    public static void main(String[] args) {
-        SpringApplication.run(CovidDataConsumer.class, args);
+    private final KafkaConfiguration kafkaConfiguration;
+
+    @Autowired
+    public CovidDataConsumer(KafkaConfiguration kafkaConfiguration) {
+        this.kafkaConfiguration = kafkaConfiguration;
     }
 
-    @Bean
-    public ConsumerFactory<String, JsonNode> consumerFactory() {
+    @Async
+    public void Start() {
+        try (Consumer<String, String> consumer = createConsumer()) {
+            consumer.subscribe(Collections.singletonList(TOPIC_NAME));
+            while (true) {
+                ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(1000));
+                records.forEach(record -> listen(record.value()));
+            }
+        }
+    }
+
+    private static Consumer<String, String> createConsumer() {
         Map<String, Object> props = new HashMap<>();
-        props.put(org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
-        props.put(org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG, GROUP_ID);
-        props.put(org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new JsonDeserializer<>(JsonNode.class));
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, GROUP_ID);
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
+        props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000");
+        return new KafkaConsumer<>(props);
     }
 
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, JsonNode> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, JsonNode> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(consumerFactory());
-        return factory;
-    }
 
     @KafkaListener(topics = TOPIC_NAME, groupId = GROUP_ID)
-    public void listen(JsonNode jsonNode) {
+    public static void listen(String jsonString) {
         ObjectMapper mapper = new ObjectMapper();
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            JsonNode jsonNode = mapper.readTree(jsonString);
             Statement stmt = conn.createStatement();
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Global (id SERIAL PRIMARY KEY, new_confirmed INTEGER, total_confirmed INTEGER, new_deaths INTEGER, total_deaths INTEGER, new_recovered INTEGER, total_recovered INTEGER)");
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Countries (id SERIAL PRIMARY KEY, country TEXT, country_code TEXT, slug TEXT, new_confirmed INTEGER, total_confirmed INTEGER, new_deaths INTEGER, total_deaths INTEGER, new_recovered INTEGER, total_recovered INTEGER, date_maj TIMESTAMP)");
@@ -113,6 +142,10 @@ public class CovidDataConsumer {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } catch (JsonMappingException e) {
+            throw new RuntimeException(e);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
     }
 }

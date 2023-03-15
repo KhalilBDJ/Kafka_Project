@@ -4,22 +4,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.serializer.JsonSerializer;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,6 +31,8 @@ import java.util.concurrent.ExecutionException;
 @SpringBootApplication
 @EnableKafka
 @EnableScheduling
+@Import(KafkaConfiguration.class) // Importez la configuration Kafka ici
+@Component
 public class CovidDataProducer {
 
     private static final String KAFKA_SERVERS = "localhost:9092"; // adresse du serveur kafka
@@ -41,8 +41,9 @@ public class CovidDataProducer {
     @Autowired
     private KafkaTemplate<String, Object> kafkaTemplate;
 
-    public static void main(String[] args) throws ExecutionException, InterruptedException {
-        ConfigurableApplicationContext context = SpringApplication.run(CovidDataProducer.class, args);
+    @Async
+    public void Start(ConfigurableApplicationContext context) throws ExecutionException, InterruptedException {
+        //ConfigurableApplicationContext context = SpringApplication.run(CovidDataProducer.class);
 
         // Créer un bean KafkaAdmin pour pouvoir créer des topics
         KafkaAdmin admin = (KafkaAdmin) context.getBean("kafkaAdmin");
@@ -78,15 +79,5 @@ public class CovidDataProducer {
         // Envoyer le message
         ProducerRecord<String, Object> record = new ProducerRecord<>(topicName, jsonString);
         kafkaTemplate.send(record);
-    }
-
-    // Définir les propriétés du producteur
-    @Bean
-    public Properties producerConfig() {
-        Properties props = new Properties();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_SERVERS);
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-        return props;
     }
 }

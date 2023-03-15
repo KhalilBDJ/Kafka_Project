@@ -1,20 +1,41 @@
 package org.example;
 
-import java.io.IOException;
-import java.util.concurrent.ExecutionException;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Import;
+import org.springframework.scheduling.annotation.EnableAsync;
 
+@SpringBootApplication
+@Import(KafkaConfiguration.class)
+@EnableAsync
 public class Main {
 
-    private static CommandProducer commandProducer;
-    private static CommandConsumer commandConsumer;
-    private static CovidDataConsumer covidDataConsumer;
-    private static CovidDataProducer covidDataProducer;
-    private static APIProducerAndConsumer apiProducerAndConsumer;
-    public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
-        covidDataConsumer.main(args);
-        covidDataProducer.main(args);
-        commandProducer.main(args);
-        commandConsumer.main(args);
-        apiProducerAndConsumer.main(args);
+    public static void main(String[] args) {
+        ConfigurableApplicationContext context = SpringApplication.run(Main.class, args);
+
+        // Exécuter CovidDataProducer
+        CovidDataProducer producer = context.getBean(CovidDataProducer.class);
+        try {
+            producer.Start(context);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // Exécuter CovidDataConsumer
+        CovidDataConsumer consumer = context.getBean(CovidDataConsumer.class);
+        try {
+            consumer.Start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // Exécuter CommandProducer
+        CommandProducer commandProducer = context.getBean(CommandProducer.class);
+        try {
+            commandProducer.Start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
