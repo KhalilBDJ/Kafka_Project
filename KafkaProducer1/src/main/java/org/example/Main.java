@@ -1,19 +1,20 @@
 package org.example;
 
-import java.io.IOException;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Import;
+import org.springframework.scheduling.annotation.EnableAsync;
 
+@SpringBootApplication
+@Import(KafkaConfiguration.class)
+@EnableAsync
 public class Main {
 
-    private static CommandProducer commandProducer;
-    private static CommandConsumer commandConsumer;
-    private static CovidDataConsumer covidDataConsumer;
-    private static CovidDataProducer covidDataProducer;
-    private static APIProducerAndConsumer apiProducerAndConsumer;
-    public static void main(String[] args) throws IOException {
-        covidDataConsumer.main(args);
-        covidDataProducer.main(args);
-        commandProducer.main(args);
-        commandConsumer.main(args);
-        apiProducerAndConsumer.main(args);
+    public static void main(String[] args) {
+        ConfigurableApplicationContext context = SpringApplication.run(Main.class, args);
+        CommandProducer commandProducer = context.getBean(CommandProducer.class);
+        commandProducer.StartProducer();
+
     }
 }
