@@ -1,20 +1,11 @@
 package org.example;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.admin.AdminClientConfig;
-import org.apache.kafka.clients.admin.NewTopic;
+
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.Import;
-import org.springframework.kafka.annotation.EnableKafka;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.core.KafkaAdmin;
+
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.scheduling.annotation.Async;
+
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -24,17 +15,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Collections;
-import java.util.Properties;
-import java.util.concurrent.ExecutionException;
 
-@EnableKafka
+
 @EnableScheduling
-@Import(KafkaConfiguration.class) // Importez la configuration Kafka ici
 @Component
 public class CovidDataProducer {
-
-    private static final String KAFKA_SERVERS = "localhost:9092"; // adresse du serveur kafka
     private static final String TOPIC_NAME = "Topic1";
 
     @Autowired

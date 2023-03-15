@@ -2,81 +2,30 @@ package org.example;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import org.apache.kafka.clients.consumer.Consumer;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.serialization.StringDeserializer;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Import;
-import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.core.ConsumerFactory;
-import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ConsumerSeekAware;
-import org.springframework.kafka.support.serializer.JsonDeserializer;
-import org.springframework.context.annotation.Bean;
-import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 
-import java.io.IOException;
+
 import java.sql.*;
-import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
-@EnableKafka
-@Import(KafkaConfiguration.class)
+
 @Component
 public class CovidDataConsumer implements ConsumerSeekAware {
 
     private final static String TOPIC_NAME = "Topic1";
     private final static String GROUP_ID = "group1";
-    private final static String BOOTSTRAP_SERVERS = "localhost:9092";
     private final static String DB_URL = "jdbc:postgresql://localhost:5432/kafkadb";
     private final static String DB_USER = "postgres";
     private final static String DB_PASSWORD = "1797";
 
-   /* private final KafkaConfiguration kafkaConfiguration;
-*/
-   /* @Autowired
-    public CovidDataConsumer(KafkaConfiguration kafkaConfiguration) {
-        this.kafkaConfiguration = kafkaConfiguration;
-    }*/
-
-   /* @Async
-    public void Start() {
-        try (Consumer<String, String> consumer = createConsumer()) {
-            consumer.subscribe(Collections.singletonList(TOPIC_NAME));
-            while (true) {
-                ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(1000));
-                records.forEach(record -> listen(record.value()));
-            }
-        }
-    }
-
-    private static Consumer<String, String> createConsumer() {
-        Map<String, Object> props = new HashMap<>();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, GROUP_ID);
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-        props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
-        props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000");
-        return new KafkaConsumer<>(props);
-    }*/
 
     @Override
     public void onPartitionsAssigned(Map<TopicPartition, Long> assignments, ConsumerSeekCallback callback) {

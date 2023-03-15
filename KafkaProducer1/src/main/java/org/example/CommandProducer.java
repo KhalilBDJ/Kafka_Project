@@ -19,14 +19,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-@EnableKafka
-@Import(KafkaConfiguration.class)
+
 @Component
 public class CommandProducer {
 
-    private static final String BOOTSTRAP_SERVERS = "localhost:9092";
     private static final String TOPIC_NAME2 = "Topic2";
-
     @Autowired
     private KafkaTemplate<String, Object> kafkaTemplate;
 
@@ -34,8 +31,8 @@ public class CommandProducer {
     @Async
     public void StartProducer() {
         Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter a command to send to Kafka: ");
         while (true) {
-            System.out.print("Enter a command to send to Kafka: ");
             String input = scanner.nextLine();
             if (input.equals("help")) {
                 System.out.println("Voici les commandes disponibles : \n" +
@@ -48,17 +45,8 @@ public class CommandProducer {
                 break;
             } else {
                 kafkaTemplate.send(TOPIC_NAME2, input);
-
-                System.out.println("Sent command: " + input + " to Kafka topic: " + TOPIC_NAME2);
             }
         }
     }
 
-    /*@Async
-    public void Start() {
-        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CommandProducer.class);
-        KafkaTemplate<String, String> kafkaTemplate = context.getBean(KafkaTemplate.class);
-        CommandProducer commandProducer = new CommandProducer();
-        commandProducer.startProducer(kafkaTemplate);
-    }*/
 }
