@@ -1,6 +1,7 @@
 package org.example;
 
 import org.apache.kafka.common.TopicPartition;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.listener.ConsumerSeekAware;
 import org.springframework.stereotype.Component;
@@ -17,14 +18,14 @@ public class CommandConsumer implements ConsumerSeekAware  {
     }
 
     @Override
-    public void onPartitionsAssigned(Map<TopicPartition, Long> assignments, ConsumerSeekAware.ConsumerSeekCallback callback) {
+    public void onPartitionsAssigned(@NotNull Map<TopicPartition, Long> assignments, ConsumerSeekAware.@NotNull ConsumerSeekCallback callback) {
         for (Map.Entry<TopicPartition, Long> entry : assignments.entrySet()) {
             callback.seekToEnd(entry.getKey().topic(), entry.getKey().partition());
         }
     }
 
     @Override
-    public void onIdleContainer(Map<TopicPartition, Long> assignments, ConsumerSeekAware.ConsumerSeekCallback callback) {
-        // Laissez cette méthode vide
+    public void onIdleContainer(@NotNull Map<TopicPartition, Long> assignments, ConsumerSeekAware.@NotNull ConsumerSeekCallback callback) {
+
     }
 }

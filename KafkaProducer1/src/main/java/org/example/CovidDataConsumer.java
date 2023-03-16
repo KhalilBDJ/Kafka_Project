@@ -1,8 +1,8 @@
 package org.example;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import org.apache.kafka.common.TopicPartition;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.listener.ConsumerSeekAware;
 
@@ -24,25 +24,36 @@ public class CovidDataConsumer implements ConsumerSeekAware {
     private final static String GROUP_ID = "group1";
     private final static String DB_URL = "jdbc:postgresql://localhost:5432/kafkadb";
     private final static String DB_USER = "postgres";
-    private final static String DB_PASSWORD = "1797";
+    private final static String DB_PASSWORD = "1797"; // mettre son propre mot de passe
 
 
     @Override
-    public void onPartitionsAssigned(Map<TopicPartition, Long> assignments, ConsumerSeekCallback callback) {
+    public void onPartitionsAssigned(@NotNull Map<TopicPartition, Long> assignments, @NotNull ConsumerSeekCallback callback) {
         for (Map.Entry<TopicPartition, Long> entry : assignments.entrySet()) {
             callback.seekToEnd(entry.getKey().topic(), entry.getKey().partition());
         }
     }
 
     @Override
-    public void onIdleContainer(Map<TopicPartition, Long> assignments, ConsumerSeekCallback callback) {
-        // Laissez cette méthode vide
+    public void onIdleContainer(@NotNull Map<TopicPartition, Long> assignments, @NotNull ConsumerSeekCallback callback) {
+
     }
 
 
     @KafkaListener(topics = TOPIC_NAME, groupId = GROUP_ID)
-    public static void listen(String jsonString) {
+    public void listen(String jsonString) {
         ObjectMapper mapper = new ObjectMapper();
+
+        try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", DB_USER, DB_PASSWORD)) {
+            Statement stmt = conn.createStatement();
+
+            ResultSet resultSet = stmt.executeQuery("SELECT datname FROM pg_database WHERE datname = 'kafkadb'");
+            if (!resultSet.next()) {
+                stmt.executeUpdate("CREATE DATABASE kafkadb");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
             JsonNode jsonNode = mapper.readTree(jsonString);
             Statement stmt = conn.createStatement();
@@ -70,9 +81,6 @@ public class CovidDataConsumer implements ConsumerSeekAware {
             if (generatedKeys.next()) {
                 int globalId = generatedKeys.getInt(1);
                 ArrayNode countriesNode = (ArrayNode) jsonNode.get("Countries");
-                if (countriesNode == null){
-                    System.out.println("oui");
-                }
                 for (JsonNode countryNode : countriesNode) {
                     String country = countryNode.get("Country").asText();
                     String countryCode = countryNode.get("CountryCode").asText();
@@ -107,8 +115,6 @@ public class CovidDataConsumer implements ConsumerSeekAware {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } catch (JsonMappingException e) {
-            throw new RuntimeException(e);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

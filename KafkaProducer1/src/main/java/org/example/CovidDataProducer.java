@@ -25,7 +25,7 @@ public class CovidDataProducer {
     @Autowired
     private KafkaTemplate<String, Object> kafkaTemplate;
 
-    @Scheduled(fixedDelay = 30 * 60 * 1000)
+    @Scheduled(fixedDelay = 30 * 60 * 1000, initialDelay = 5000)
     public void sendCovidData() throws IOException {
         URL url = new URL("https://api.covid19api.com/summary");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -41,10 +41,8 @@ public class CovidDataProducer {
 
         in.close();
         String jsonString = response.toString();
-        String topicName = TOPIC_NAME;
 
-        // Envoyer le message
-        ProducerRecord<String, Object> record = new ProducerRecord<>(topicName, jsonString);
+        ProducerRecord<String, Object> record = new ProducerRecord<>(TOPIC_NAME, jsonString);
         kafkaTemplate.send(record);
     }
 }
