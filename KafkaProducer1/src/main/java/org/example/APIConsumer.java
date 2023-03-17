@@ -1,6 +1,8 @@
 package org.example;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.common.TopicPartition;
 import org.example.Repositories.GlobalRepository;
 import org.jetbrains.annotations.NotNull;
@@ -38,26 +40,28 @@ public class APIConsumer implements ConsumerSeekAware {
 
     }
     @KafkaListener(topics = "Topic2", groupId = "group1")
-    public void consume(String message) {
+    public void consume(String message) throws JsonProcessingException {
         String response = kafkaInterface(message);
         if (!response.isEmpty()) {
             apiProducer.sendMessage(response);
         }
     }
 
-    public String kafkaInterface(String input){
-        String outpout = "";
+    public String kafkaInterface(String input) throws JsonProcessingException {
+        String output = "";
+        ObjectMapper objectMapper = new ObjectMapper();
         if (input != null){
             switch (input) {
-                case "Get_global_values" -> outpout = globalRepository.findAll().toString();
-                case "Get_country_values Algerie" -> outpout = "DZ Power";
-                case "Get_confirmed_avg" -> outpout = "La moyenne des confirmés est";
-                case "Get_deaths_avg" -> outpout = "La moyenne des morts est";
-                case "Get_countries_deaths_percent" -> outpout = "Le pourcentage de mort pour le pays est";
+                case "Get_global_values" -> output = objectMapper.writeValueAsString(globalRepository.findAll());
+                case "Get_country_values Algerie" -> output = "DZ Power";
+                case "Get_confirmed_avg" -> output = "La moyenne des confirmés est";
+                case "Get_deaths_avg" -> output = "La moyenne des morts est";
+                case "Get_countries_deaths_percent" -> output = "Le pourcentage de mort pour le pays est";
             }
         }
-        return outpout;
+        return output;
     }
+
 
 
 }
