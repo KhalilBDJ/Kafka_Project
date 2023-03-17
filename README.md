@@ -1,12 +1,15 @@
 # Kafka_Project
 
 BEDJAOUI Khalil 21903077
+
 DELANOE Rémi 22105636
+
 DIMROCI Anatole 22007293
+
 
 Pour charger le serveur Kafka, il faut utiliser docker. Pour charger le fichier YAML, il faut se rendre dans KAFKA_Env et entrer la commande : docker-compose up -d
 
-Une fois exécuté, vous pourrez lancer le Main du projet.
+Une fois exécuté, vous pourrez lancer le Main du projet KafkaProducer1 (petit problème dans le nom, on arrive pas à le renommer KafkaArchitecture).
 
 Les commandes SQL sont gérées par Java
 
