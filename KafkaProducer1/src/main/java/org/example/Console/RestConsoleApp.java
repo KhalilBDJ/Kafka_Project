@@ -36,13 +36,13 @@ public class RestConsoleApp {
                     output = sendRestRequest("http://localhost:8080/command", command);
                     break;
                 case "Get_confirmed_avg":
-                    output = "?";
+                    output = sendRestRequest("http://localhost:8080/command", command);
                     break;
                 case "Get_deaths_avg":
-                    output = "?";
+                    output = sendRestRequest("http://localhost:8080/command", command);
                     break;
                 case "Get_countries_deaths_percent":
-                    output = "?";
+                    output = sendRestRequest("http://localhost:8080/command", command);
                     break;
                 default:
                     System.out.println("Commande non reconnue");
