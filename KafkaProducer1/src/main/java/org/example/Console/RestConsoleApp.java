@@ -14,19 +14,32 @@ import java.net.http.HttpResponse;
 
 public class RestConsoleApp {
 
+
+    public static String extractCountry(String input) {
+        String[] parts = input.split("\\s+");
+        return parts[1];
+    }
+
+    public static String extractCommand(String input) {
+        String[] parts = input.split("\\s+");
+        return parts[0];
+    }
     public static void main(String[] args) throws IOException, InterruptedException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        String input = "";
         String command = "";
         String output = "";
 
-        while (!"exit".equalsIgnoreCase(command)) {
-            command = br.readLine();
+        while (!"exit".equalsIgnoreCase(input)) {
+            System.out.println("Entrez une commande:");
+            input = br.readLine();
+            command = extractCommand(input);
             switch (command) {
                 case "Get_global_values":
                     output = sendRestRequest("http://localhost:8080/command", command);
                     break;
-                case "Get_country_values Algerie":
-                    output = sendRestRequest("http://localhost:8080/command", command);
+                case "Get_country_values":
+                    output = sendRestRequest("http://localhost:8080/command", command + " " +  extractCountry(input));
                     break;
                 case "Get_confirmed_avg":
                     output = sendRestRequest("http://localhost:8080/command", command);
@@ -44,6 +57,7 @@ public class RestConsoleApp {
                             "Get_confirmed_avg : retourne une moyenne des cas confirmés\n" +
                             "Get_deaths_avg : retourne une moyenne des Décès\n" +
                             "Get_countries_deaths_percent : retourne le pourcentage de Décès par rapport aux cas confirmés");
+                    output = "";
                     break;
                 default:
                     System.out.println("Commande non reconnue");
@@ -68,5 +82,7 @@ public class RestConsoleApp {
                 HttpResponse.BodyHandlers.ofString());
         return response.body();
     }
+
+
 
 }

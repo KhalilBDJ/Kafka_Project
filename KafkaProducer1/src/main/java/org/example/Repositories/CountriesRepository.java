@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface CountriesRepository extends JpaRepository<Countries, Long> {
     Countries findByCountry(String name);
-    
+
 }

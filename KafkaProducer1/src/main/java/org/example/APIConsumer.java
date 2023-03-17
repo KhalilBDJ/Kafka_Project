@@ -2,6 +2,7 @@ package org.example;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.common.TopicPartition;
 
@@ -11,12 +12,9 @@ import org.example.Repositories.CountriesRepository;
 import org.example.Repositories.GlobalRepository;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.listener.ConsumerSeekAware;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 import java.util.Map;
@@ -62,31 +60,25 @@ public class APIConsumer implements ConsumerSeekAware {
             String command = extractCommand(input);
             switch (command) {
                 case "Get_global_values" -> output = "L'état global est " + objectMapper.writeValueAsString(globalRepository.findAll());
-                case "Get_country_values" -> output = getCountryVallues(extractCountry(input));
+                case "Get_country_values" -> output = getCountryValues(extractCountry(input));
                 case "Get_confirmed_avg" -> output = "La moyenne des confirmés est " + getConfirmedAvg();
                 case "Get_deaths_avg" -> output = "La moyenne des morts est " + getDeathsAvg();
-                case "Get_countries_deaths_percent" -> output = "Le pourcentage de mort pour le pays est " + countriesDeathsPercent();
+                case "Get_countries_deaths_percent" -> output = "Le pourcentage de mort est " + countriesDeathsPercent();
             }
         }
         return output;
     }
 
 
-    public String getCountryVallues(String name) throws JsonProcessingException {
+    public String getCountryValues(String name) throws JsonProcessingException {
 
         ObjectMapper objectMapper = new ObjectMapper();
-
         String countryString = objectMapper.writeValueAsString(countriesRepository.findByCountry(name));
-        Countries country = objectMapper.readValue(countryString, Countries.class);
-
         return countryString;
     }
 
     public String getConfirmedAvg() {
-        ObjectMapper objectMapper = new ObjectMapper();
-
         List<Countries> countriesList = countriesRepository.findAll();
-        //List<String> nameList = new ArrayList<>();
         double totalConfirmed = 0.0;
 
         for (Countries country : countriesList) {
@@ -99,10 +91,8 @@ public class APIConsumer implements ConsumerSeekAware {
     }
 
     public String getDeathsAvg() {
-        ObjectMapper objectMapper = new ObjectMapper();
 
         List<Countries> countriesList = countriesRepository.findAll();
-        //List<String> nameList = new ArrayList<>();
         double totalConfirmed = 0.0;
 
         for (Countries country : countriesList) {
@@ -114,13 +104,17 @@ public class APIConsumer implements ConsumerSeekAware {
     }
 
     public String countriesDeathsPercent() throws JsonProcessingException {
-
         ObjectMapper objectMapper = new ObjectMapper();
 
-        String globalString = objectMapper.writeValueAsString(countriesRepository.findAll());
-        Global global = objectMapper.readValue(globalString, Global.class);
+        String globalString = objectMapper.writeValueAsString(globalRepository.findAll());
+        List<Global> globalList = objectMapper.readValue(globalString, new TypeReference<List<Global>>() {});
 
-        double deathPercent = (double) global.getTotalDeaths() / (double) global.getTotalConfirmed();
+        if (globalList.isEmpty()) {
+            throw new IllegalStateException("La liste des données globales est vide.");
+        }
+
+        Global global = globalList.get(0);
+        double deathPercent = 100 * (double) global.getTotalDeaths() / (double) global.getTotalConfirmed();
 
         return Double.toString(deathPercent);
     }
