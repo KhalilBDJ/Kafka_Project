@@ -30,7 +30,5 @@ public class Main {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
-        CommandProducer commandProducer = context.getBean(CommandProducer.class);
-        commandProducer.StartProducer();
     }
 }
