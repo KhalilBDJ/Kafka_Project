@@ -21,23 +21,17 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
-
-  control-center:
-    image: confluentinc/cp-enterprise-control-center:6.2.0
-    container_name: control-center
-    hostname: control-center
-    depends_on:
-      - kafka
-    ports:
-      - "9021:9021"
+  db:
+    image: postgres
     environment:
-      CONTROL_CENTER_BOOTSTRAP_SERVERS: "kafka:9092"
-      CONTROL_CENTER_ZOOKEEPER_CONNECT: "zookeeper:2181"
-      CONTROL_CENTER_CONNECT_CLUSTER: "kafka-cluster"
-      CONTROL_CENTER_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
-      CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: "1"
-      CONTROL_CENTER_REPLICATION_FACTOR: "1"
-      CONTROL_CENTER_INTERNAL_TOPICS_RETENTION_MS: "-1"
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=kafkadb
+    ports:
+      - 5433:5432/tcp
+    expose:
+      - 5433
+

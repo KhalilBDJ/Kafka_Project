@@ -1,0 +1,14 @@
+org/example/CommandProducer.class
+org/example/Main.class
+org/example/Repositories/GlobalRepository.class
+org/example/Classes/Summary.class
+org/example/Classes/Countries.class
+org/example/CovidDataConsumer.class
+org/example/Controllers/GlobalController.class
+org/example/APIProducer.class
+org/example/Classes/Global.class
+org/example/CommandConsumer.class
+org/example/APIConsumer.class
+org/example/Repositories/CountriesRepository.class
+org/example/CovidDataProducer.class
+org/example/KafkaConfiguration.class
