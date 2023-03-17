@@ -20,7 +20,7 @@ public class Main {
         if (System.getProperty("os.name").toLowerCase().contains("windows")) {
             command = new String[]{"cmd.exe", "/c", "start", "console.bat"};
         } else {
-            command = new String[]{"bash", "-c", "./console.sh"};
+            command = new String[]{"open", "-a", "Terminal", "console.sh"};
         }
 
         ProcessBuilder processBuilder = new ProcessBuilder(command);
