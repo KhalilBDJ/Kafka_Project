@@ -27,7 +27,7 @@ public class ConsoleController {
         kafkaTemplate.send("Topic2", command);
         String receivedMessage;
         try {
-            receivedMessage = commandConsumer.getMessageFuture().get(); // attend et récupère le message
+            receivedMessage = commandConsumer.getMessageFuture().get();
             return ResponseEntity.ok("Commande envoyée avec succès ! " + command + ". Message reçu : " + receivedMessage);
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();

@@ -55,7 +55,6 @@ public class RestConsoleApp {
         }
     }
 
-
     private static String sendRestRequest(String urlStr, String command) throws IOException, InterruptedException {
         var value = command;
         HttpClient client = HttpClient.newHttpClient();
