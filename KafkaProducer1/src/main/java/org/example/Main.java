@@ -14,7 +14,7 @@ import java.nio.file.Paths;
 public class Main {
 
     public static void main(String[] args) {
-        ConfigurableApplicationContext context = SpringApplication.run(Main.class, args);
+        SpringApplication.run(Main.class, args);
         String[] command;
 
         if (System.getProperty("os.name").toLowerCase().contains("windows")) {

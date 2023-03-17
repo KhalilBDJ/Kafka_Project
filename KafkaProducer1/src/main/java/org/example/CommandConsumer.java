@@ -12,11 +12,13 @@ import java.util.concurrent.CompletableFuture;
 @Component
 public class CommandConsumer implements ConsumerSeekAware {
     private static final String TOPIC_NAME = "Topic3";
-    private final CompletableFuture<String> messageFuture = new CompletableFuture<>();
+    private CompletableFuture<String> messageFuture = new CompletableFuture<>();
 
     @KafkaListener(topics = TOPIC_NAME, groupId = "group1")
     public void listen(String message) {
+
         messageFuture.complete(message);
+        messageFuture = new CompletableFuture<>();
     }
 
     public CompletableFuture<String> getMessageFuture() {

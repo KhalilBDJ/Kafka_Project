@@ -1,15 +1,20 @@
 package org.example.Console;
 
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 public class RestConsoleApp {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         String command = "";
         String output = "";
@@ -28,7 +33,7 @@ public class RestConsoleApp {
                     output = sendRestRequest("http://localhost:8080/command", command);
                     break;
                 case "Get_country_values Algerie":
-                    output = "?";
+                    output = sendRestRequest("http://localhost:8080/command", command);
                     break;
                 case "Get_confirmed_avg":
                     output = "?";
@@ -50,36 +55,18 @@ public class RestConsoleApp {
         }
     }
 
-    private static String sendRestRequest(String urlStr, String command) throws IOException {
-        URL url = new URL(urlStr);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/json");
-        connection.setDoOutput(true);
+    private static String sendRestRequest(String urlStr, String command) throws IOException, InterruptedException {
+        var value = command;
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(urlStr))
+                .POST(HttpRequest.BodyPublishers.ofString(value))
+                .build();
 
-        String jsonBody = String.format("{\"command\": \"%s\"}", command);
-
-        try (OutputStream os = connection.getOutputStream()) {
-            os.write(jsonBody.getBytes());
-            os.flush();
-        }
-
-        int responseCode = connection.getResponseCode();
-        if (responseCode == HttpURLConnection.HTTP_OK) {
-            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            String inputLine;
-            StringBuilder content = new StringBuilder();
-
-            while ((inputLine = in.readLine()) != null) {
-                content.append(inputLine);
-            }
-
-            in.close();
-            connection.disconnect();
-            return content.toString();
-        } else {
-            throw new IOException("Erreur lors de l'envoi de la requête REST: " + responseCode);
-        }
+        HttpResponse<String> response = client.send(request,
+                HttpResponse.BodyHandlers.ofString());
+        return response.body();
     }
+
 }

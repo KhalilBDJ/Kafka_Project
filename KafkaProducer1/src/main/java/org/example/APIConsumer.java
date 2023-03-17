@@ -4,6 +4,7 @@ package org.example;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.common.TopicPartition;
+import org.example.Repositories.CountriesRepository;
 import org.example.Repositories.GlobalRepository;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,9 @@ public class APIConsumer implements ConsumerSeekAware {
 
     @Autowired
     GlobalRepository globalRepository;
+
+    @Autowired
+    CountriesRepository countriesRepository;
 
     public APIConsumer(APIProducer apiProducer) {
         this.apiProducer = apiProducer;
@@ -53,7 +57,7 @@ public class APIConsumer implements ConsumerSeekAware {
         if (input != null){
             switch (input) {
                 case "Get_global_values" -> output = objectMapper.writeValueAsString(globalRepository.findAll());
-                case "Get_country_values Algerie" -> output = "DZ Power";
+                case "Get_country_values Algerie" -> output = objectMapper.writeValueAsString(countriesRepository.findAll());
                 case "Get_confirmed_avg" -> output = "La moyenne des confirmés est";
                 case "Get_deaths_avg" -> output = "La moyenne des morts est";
                 case "Get_countries_deaths_percent" -> output = "Le pourcentage de mort pour le pays est";
@@ -61,7 +65,5 @@ public class APIConsumer implements ConsumerSeekAware {
         }
         return output;
     }
-
-
 
 }
