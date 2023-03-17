@@ -4,6 +4,9 @@ package org.example;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.common.TopicPartition;
+
+import org.example.Classes.Countries;
+import org.example.Classes.Global;
 import org.example.Repositories.CountriesRepository;
 import org.example.Repositories.GlobalRepository;
 import org.jetbrains.annotations.NotNull;
@@ -15,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -55,15 +59,79 @@ public class APIConsumer implements ConsumerSeekAware {
         String output = "";
         ObjectMapper objectMapper = new ObjectMapper();
         if (input != null){
-            switch (input) {
-                case "Get_global_values" -> output = objectMapper.writeValueAsString(globalRepository.findAll());
-                case "Get_country_values Algerie" -> output = objectMapper.writeValueAsString(countriesRepository.findAll());
-                case "Get_confirmed_avg" -> output = "La moyenne des confirmés est";
-                case "Get_deaths_avg" -> output = "La moyenne des morts est";
-                case "Get_countries_deaths_percent" -> output = "Le pourcentage de mort pour le pays est";
+            String command = extractCommand(input);
+            switch (command) {
+                case "Get_global_values" -> output = "L'état global est " + objectMapper.writeValueAsString(globalRepository.findAll());
+                case "Get_country_values" -> output = getCountryVallues(extractCountry(input));
+                case "Get_confirmed_avg" -> output = "La moyenne des confirmés est " + getConfirmedAvg();
+                case "Get_deaths_avg" -> output = "La moyenne des morts est " + getDeathsAvg();
+                case "Get_countries_deaths_percent" -> output = "Le pourcentage de mort pour le pays est " + countriesDeathsPercent();
             }
         }
         return output;
     }
 
+
+    public String getCountryVallues(String name) throws JsonProcessingException {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        String countryString = objectMapper.writeValueAsString(countriesRepository.findByCountry(name));
+        Countries country = objectMapper.readValue(countryString, Countries.class);
+
+        return countryString;
+    }
+
+    public String getConfirmedAvg() {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        List<Countries> countriesList = countriesRepository.findAll();
+        //List<String> nameList = new ArrayList<>();
+        double totalConfirmed = 0.0;
+
+        for (Countries country : countriesList) {
+            totalConfirmed += (double) country.getTotalConfirmed();
+        }
+
+        double average = totalConfirmed / countriesList.size();
+        return Double.toString(average);
+
+    }
+
+    public String getDeathsAvg() {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        List<Countries> countriesList = countriesRepository.findAll();
+        //List<String> nameList = new ArrayList<>();
+        double totalConfirmed = 0.0;
+
+        for (Countries country : countriesList) {
+            totalConfirmed += (double) country.getTotalDeaths();
+        }
+
+        double average = totalConfirmed / countriesList.size();
+        return Double.toString(average);
+    }
+
+    public String countriesDeathsPercent() throws JsonProcessingException {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        String globalString = objectMapper.writeValueAsString(countriesRepository.findAll());
+        Global global = objectMapper.readValue(globalString, Global.class);
+
+        double deathPercent = (double) global.getTotalDeaths() / (double) global.getTotalConfirmed();
+
+        return Double.toString(deathPercent);
+    }
+
+    public String extractCountry(String input) {
+        String[] parts = input.split("\\s+");
+        return parts[1];
+    }
+
+    public String extractCommand(String input) {
+        String[] parts = input.split("\\s+");
+        return parts[0];
+    }
 }
