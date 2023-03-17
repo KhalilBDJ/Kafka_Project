@@ -2,18 +2,11 @@
 
 Pour charger le serveur Kafka, il faut utiliser docker. Pour charger le fichier YAML, il faut se rendre dans KAFKA_Env et entrer la commande : docker-compose up -d
 
-Une fois exécuté, vous pour lancer les commandes :
+Une fois exécuté, vous pourrez lancer le Main du projet.
 
-docker exec -it zookeeper /bin/bash (Pour lancer la console du serveur Zookeeper) 
+Pour Windows, une console s'ouvrira automatiquement. Pour Linux, ce n'est pas le cas, il faudra lancer le main de Console/RestConsoleApp.
 
-docker exec -it kafka-1 /bin/bash (Pour lancer la console du broker kafka-1)
+Nous avons ajouté une classe Summary, nous pensions au début du projet qu'elle aurait pu être utile. Au final nous n'avons pas trouvé l'utilité d'implémenter de nouvelles commandes avec cette classe.
 
-docker exec -it kafka-2 /bin/bash (Pour lancer la console du broker kafka-2)
+Pour les questions, elles se trouvent dans REPONSES.pdf
 
-Pour faire un consumer:
-
-kafka-console-consumer --bootstrap-server localhost:9092 --topic my-topic --from-beginning
-
-Pour supprimer les messages :
-
-kafka-delete-records --bootstrap-server localhost:9092 --topic my-topic --offset earliest
