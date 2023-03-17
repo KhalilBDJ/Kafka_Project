@@ -20,14 +20,7 @@ public class RestConsoleApp {
         String output = "";
 
         while (!"exit".equalsIgnoreCase(command)) {
-            System.out.println("Voici les commandes disponibles :\n" +
-                    "Get_global_values : retourne les valeurs globales clés Global du fichier json\n" +
-                    "Get_country_values <Pays> : retourne les valeurs du pays demandé\n" +
-                    "Get_confirmed_avg : retourne une moyenne des cas confirmés\n" +
-                    "Get_deaths_avg : retourne une moyenne des Décès\n" +
-                    "Get_countries_deaths_percent : retourne le pourcentage de Décès par rapport aux cas confirmés");
             command = br.readLine();
-
             switch (command) {
                 case "Get_global_values":
                     output = sendRestRequest("http://localhost:8080/command", command);
@@ -43,6 +36,14 @@ public class RestConsoleApp {
                     break;
                 case "Get_countries_deaths_percent":
                     output = sendRestRequest("http://localhost:8080/command", command);
+                    break;
+                case "help":
+                    System.out.println("Voici les commandes disponibles :\n" +
+                            "Get_global_values : retourne les valeurs globales clés Global du fichier json\n" +
+                            "Get_country_values <Pays> : retourne les valeurs du pays demandé\n" +
+                            "Get_confirmed_avg : retourne une moyenne des cas confirmés\n" +
+                            "Get_deaths_avg : retourne une moyenne des Décès\n" +
+                            "Get_countries_deaths_percent : retourne le pourcentage de Décès par rapport aux cas confirmés");
                     break;
                 default:
                     System.out.println("Commande non reconnue");
