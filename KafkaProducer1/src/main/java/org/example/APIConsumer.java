@@ -2,10 +2,15 @@ package org.example;
 
 
 import org.apache.kafka.common.TopicPartition;
+import org.example.Repositories.GlobalRepository;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.listener.ConsumerSeekAware;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Map;
 
@@ -13,6 +18,9 @@ import java.util.Map;
 public class APIConsumer implements ConsumerSeekAware {
 
     private final APIProducer apiProducer;
+
+    @Autowired
+    GlobalRepository globalRepository;
 
     public APIConsumer(APIProducer apiProducer) {
         this.apiProducer = apiProducer;
@@ -37,11 +45,11 @@ public class APIConsumer implements ConsumerSeekAware {
         }
     }
 
-    private String kafkaInterface(String input){
+    public String kafkaInterface(String input){
         String outpout = "";
         if (input != null){
             switch (input) {
-                case "Get_global_values" -> outpout = "Voici les global values";
+                case "Get_global_values" -> outpout = globalRepository.findAll().toString();
                 case "Get_country_values Algerie" -> outpout = "DZ Power";
                 case "Get_confirmed_avg" -> outpout = "La moyenne des confirmés est";
                 case "Get_deaths_avg" -> outpout = "La moyenne des morts est";
@@ -50,4 +58,6 @@ public class APIConsumer implements ConsumerSeekAware {
         }
         return outpout;
     }
+
+
 }

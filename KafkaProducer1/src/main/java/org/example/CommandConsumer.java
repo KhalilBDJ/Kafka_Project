@@ -7,14 +7,20 @@ import org.springframework.kafka.listener.ConsumerSeekAware;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Component
-public class CommandConsumer implements ConsumerSeekAware  {
+public class CommandConsumer implements ConsumerSeekAware {
     private static final String TOPIC_NAME = "Topic3";
+    private final CompletableFuture<String> messageFuture = new CompletableFuture<>();
 
     @KafkaListener(topics = TOPIC_NAME, groupId = "group1")
     public void listen(String message) {
-        System.out.println(message);
+        messageFuture.complete(message);
+    }
+
+    public CompletableFuture<String> getMessageFuture() {
+        return messageFuture;
     }
 
     @Override
