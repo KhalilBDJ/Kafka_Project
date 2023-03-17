@@ -57,9 +57,15 @@ public class CovidDataConsumer implements ConsumerSeekAware {
         ObjectMapper mapper = new ObjectMapper();
 
         try {
-            globalRepository.deleteAll();
-            summaryRepository.deleteAll();
-            countriesRepository.deleteAll();
+            if (globalRepository.count() > 0) {
+                globalRepository.deleteAll();
+            }
+            if (summaryRepository.count() > 0) {
+                summaryRepository.deleteAll();
+            }
+            if (countriesRepository.count() > 0) {
+                countriesRepository.deleteAll();
+            }
             JsonNode jsonNode = mapper.readTree(jsonString);
             JsonNode globalNode = jsonNode.get("Global");
             int newConfirmed = globalNode.get("NewConfirmed").asInt();

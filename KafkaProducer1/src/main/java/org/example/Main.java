@@ -6,24 +6,24 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Import;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @SpringBootApplication
 @Import(KafkaConfiguration.class)
 public class Main {
 
-
-
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(Main.class, args);
-        String scriptName;
+        String[] command;
 
         if (System.getProperty("os.name").toLowerCase().contains("windows")) {
-            scriptName = "console.bat";
+            command = new String[]{"cmd.exe", "/c", "start", "console.bat"};
         } else {
-            scriptName = "./console.sh";
+            command = new String[]{"bash", "-c", "./console.sh"};
         }
 
-        ProcessBuilder processBuilder = new ProcessBuilder(scriptName);
+        ProcessBuilder processBuilder = new ProcessBuilder(command);
         try {
             Process process = processBuilder.start();
             process.waitFor();
@@ -32,6 +32,5 @@ public class Main {
         }
         CommandProducer commandProducer = context.getBean(CommandProducer.class);
         commandProducer.StartProducer();
-
     }
 }
